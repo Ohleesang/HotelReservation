@@ -98,13 +98,19 @@ class HotelReservation{
             while (true) {
                 try {
                     input = readLine()
-                    customer.checkInDate = LocalDate.of(
-                        input?.substring(0..3)?.toIntOrNull()!!,
-                        input?.substring(4..5)?.toIntOrNull()!!,
-                        input?.substring(6..7)?.toIntOrNull()!!
-                    )
+//                    customer.checkInDate = LocalDate.of(
+//                        input?.substring(0..3)?.toIntOrNull()!!,
+//                        input?.substring(4..5)?.toIntOrNull()!!,
+//                        input?.substring(6..7)?.toIntOrNull()!!
+//                    )
+                    //입력된 값을 파싱!
+                    var parsedText = input?.substring(0..3)+"-"+
+                    input?.substring(4..5)+"-"+
+                    input?.substring(6..7)
+                    customer.checkInDate = LocalDate.parse(parsedText)
                     break
                 } catch (e: Exception) {
+                    println("파싱이 이상해요")
                 }
             }
 
@@ -116,11 +122,16 @@ class HotelReservation{
                     input = readLine()
 
                     //체크인 날짜 랑 같거나 이전이면 안된다!
-                    customer.checkOutDate = LocalDate.of(
-                        input?.substring(0..3)?.toIntOrNull()!!,
-                        input?.substring(4..5)?.toIntOrNull()!!,
-                        input?.substring(6..7)?.toIntOrNull()!!
-                    )
+//                    customer.checkOutDate = LocalDate.of(
+//                        input?.substring(0..3)?.toIntOrNull()!!,
+//                        input?.substring(4..5)?.toIntOrNull()!!,
+//                        input?.substring(6..7)?.toIntOrNull()!!
+//                    )
+
+                    var parsedText = input?.substring(0..3)+"-"+
+                            input?.substring(4..5)+"-"+
+                            input?.substring(6..7)
+                    customer.checkOutDate = LocalDate.parse(parsedText)
 
                     if (customer.checkInDate.isBefore(customer.checkOutDate)) {
                         //예약이 가능한지 안하는지 판별

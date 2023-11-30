@@ -1,6 +1,5 @@
 import java.lang.NumberFormatException
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.LocalDate
 
 /**
  *
@@ -27,14 +26,16 @@ class HotelReservation{
     var input :String? =""
 
     // 호텔 관련 프로퍼티
-    var name : String? =""
-    var roomNum : Int = -1
-    var checkInDate : Date = Date()
-    var checkOutDate : Date = Date()
-    var fee = 0//호텔 예약비
+    var customerList = mutableListOf<Customer>()
+
+//    var name : String? ="" // 고객
+//    var roomNum : Int = -1 // 예약룸
+//    var checkInDate : Date = Date() //체크인 날짜
+//    var checkOutDate : Date = Date() //체크아웃 날짜
+//    var fee = 0//호텔 예약비
 
 
-    // 소비자?에 대한 프로퍼티
+    // 고객에 대한 프로퍼티
     var money = 0
     //앱 실행
     fun executeApp(){
@@ -57,12 +58,14 @@ class HotelReservation{
     //1.방예약 프로그램
     fun reservationRoom(){
 
+        //고객님 리스트 작성
+        var customer = Customer()
         //성함 입력
         while(true) {
             println("예약자분의 성함을 입력해주세요")
             input = readLine()
             if(input=="") continue
-            this.name = input.toString()
+            customer.name = input.toString()
             break
         }
 
@@ -75,7 +78,7 @@ class HotelReservation{
                 input = readLine()
                 roomNum = input?.toInt()!!
                 if (roomNum >= 100 && roomNum <= 999){
-                    this.roomNum =roomNum
+                    customer.roomNum =roomNum
                     break
                 }
                 else println("올바르지 않은 방번호 입니다. 방번호는 100~999 영역이내 입니다.")
@@ -84,65 +87,133 @@ class HotelReservation{
             }
         }
 
-        //체크인 날짜 입력
-        println("체크인 날짜를 입력해주세요 표기형식. 20231130")
 
-        while(true) {
-            try {
-                input = readLine()
-                //date 클래스에 맞게 파싱한다(문자열 -> Date 객체)
-                //데이터의 형식을 이해하고, 해당 형식에 맞게 데이터를 처리하는 과정
-                val dataFormat = SimpleDateFormat("yyyyMMdd")
-                this.checkInDate = dataFormat.parse(input)
-                break
-            } catch (e: Exception) {
-            }
-        }
+        //체크인&체크아웃
+        var isCheck = false
+        while(!isCheck) {
 
-        //체크아웃 날짜 입력
-        println("체크아웃 날짜를 입력해주세요 표기형식. 20231204")
+            //체크인 날짜 입력
+            println("체크인 날짜를 입력해주세요 표기형식. 20231130")
 
-        while(true) {
-            try {
-                input = readLine()
-                //date 클래스에 맞게 파싱한다(문자열 -> Date 객체)
-                //데이터의 형식을 이해하고, 해당 형식에 맞게 데이터를 처리하는 과정
-                val dataFormat = SimpleDateFormat("yyyyMMdd")
-                val date = dataFormat.parse(input)
-
-                //체크인 날짜 랑 같거나 이전이면 안된다!
-                if(date.before(this.checkInDate)||date ==this.checkInDate){
-                    println("체크인 날짜보다 이전이거나 같을수 없습니다.")
-                    continue
-                }
-                else{
-                    this.checkOutDate=date
+            while (true) {
+                try {
+                    input = readLine()
+                    customer.checkInDate = LocalDate.of(
+                        input?.substring(0..3)?.toIntOrNull()!!,
+                        input?.substring(4..5)?.toIntOrNull()!!,
+                        input?.substring(6..7)?.toIntOrNull()!!
+                    )
                     break
+                } catch (e: Exception) {
                 }
-            } catch (e: Exception) {
+            }
+
+            //체크아웃 날짜 입력
+            println("체크아웃 날짜를 입력해주세요 표기형식. 20231204")
+
+            while (true) {
+                try {
+                    input = readLine()
+
+                    //체크인 날짜 랑 같거나 이전이면 안된다!
+                    customer.checkOutDate = LocalDate.of(
+                        input?.substring(0..3)?.toIntOrNull()!!,
+                        input?.substring(4..5)?.toIntOrNull()!!,
+                        input?.substring(6..7)?.toIntOrNull()!!
+                    )
+
+                    if (customer.checkInDate.isBefore(customer.checkOutDate)) {
+                        //예약이 가능한지 안하는지 판별
+                        if (isReservaiton(customer)) isCheck = true
+                        else println("날짜가 겹쳐있거나 이미 기간 내에 예약된 방입니다.")
+
+                        break
+                    } else {
+                        println("체크인 날짜보다 이전이거나 같을수 없습니다.")
+                        continue
+                    }
+                } catch (e: Exception) {
+                }
             }
         }
-
 
         println("호텔예약이 완료되었습니다.")
 
 
         //이때 임의의 금액을 지급해주고 랜덤으로 호텔 예약비로 빠져나가도록
-        consumerSetMoneyRand()
-        setFeeRand()
+        customer.customerSetMoneyRand()
+        setFeeRand(customer)
+
         //뺀값을 입력후 출력
-        this.money -= this.fee
-        println("예약자분의 현재 돈  : ${this.money}")
+        customer.money -= customer.fee
+        println("예약자분의 현재 돈  : ${customer.money}")
+
+
+        customerList.add(customer) //리스트에 고객님 정보 입력완료!
         println()
 
     }
+
+    //예약이 가능한가요??
+    fun isReservaiton(c :Customer):Boolean{
+        // 날짜가 겹쳐있는지 확인
+
+        //dataRange         ![!------] dataRange 의 min : a
+        //listRange     [------!]!     listRange 의 max : b
+        // a>b 이면 겹쳐지 않는것!
+
+        //dataRange     [------!]!     dataRange 의 max : b
+        //listRange         ![!------] listRange 의 min : a
+        // b<a 이면 겹치지 않는것!
+        //만약 min의 큰 값이 max의 작은값 보다 크다면 겹쳐있지 않다?
+
+        var dateRange = c.checkInDate..c.checkOutDate
+        for(li in customerList){
+            var listDataRange = li.checkInDate..li.checkOutDate
+
+            var min = maxOf(dateRange.start,listDataRange.start)
+            var max = minOf(dateRange.endInclusive,listDataRange.endInclusive)
+
+            var isRange = min > max
+            if(!isRange){
+                //겹쳐 있다면 방은 비어있는지 확인해야함
+                if(li.roomNum==c.roomNum) return false //방이 비어있지 않으므로 false
+
+                else return true // 방은 비어 있으니까 예약가능!
+            }
+            else return true // 겹쳐 있지 않으므로 true
+        }
+        return true
+    }
     //2.예약목록 출력
     fun reservationList(){
+        if(customerList.isEmpty()){
+            println("예약된 손님들이 없습니다!")
+            return
+        }
 
+        for(c in customerList){
+            print((customerList.indexOf(c)+1).toString()+". ")//1.
+            print("사용자: "+c.name+", ")//사용자: 고객님, 
+            print("방번호: "+c.roomNum.toString()+"호, ")//방번호 : xxx호, 
+            print("체크인: "+c.checkInDate.toString()+", ")//2023-xx-xx .
+            println("체크아웃: "+c.checkOutDate.toString())//2023-xx-xx >>>라인넘김
+        }
     }
     //3.예약목록 (정렬) 출력
     fun sortedReservationList(){
-
+        if(customerList.isEmpty()){
+            println("예약된 손님들이 없습니다!")
+            return
+        }
+        var temp = customerList.sortedBy{it.checkInDate}.toMutableList()
+        for(c in temp){
+            print((temp.indexOf(c)+1).toString()+". ")//1.
+            print("사용자: "+c.name+", ")//사용자: 고객님,
+            print("방번호: "+c.roomNum.toString()+"호, ")//방번호 : xxx호,
+            print("체크인: "+c.checkInDate.toString()+", ")//2023-xx-xx .
+            println("체크아웃: "+c.checkOutDate.toString())//2023-xx-xx >>>라인넘김
+        }
     }
     //4.시스템 종료
     fun quitApp(){
@@ -157,20 +228,32 @@ class HotelReservation{
 
     }
 
-    //소비자? 에 임의의 머니를 지급
-    fun consumerSetMoneyRand(){
+    //호텔 예약비 임의로 지정
+    fun setFeeRand(customer :Customer){
+        var range = (100000..1000000 step 10000)
+        customer.fee = (range.first..range.last).random()
+        println("호텔 예약비  : ${customer.fee}")
+    }
+}
+
+//고객 클래스
+class Customer{
+    var name : String? ="" // 고객
+    var roomNum : Int = -1 // 예약룸
+    var checkInDate : LocalDate = LocalDate.of(2000,1,1)  //체크인 날짜
+    var checkOutDate : LocalDate =LocalDate.of(2000,1,1) //체크아웃 날짜
+    var fee = 0//호텔 예약비
+    var money = 0 // 고객 지갑..
+
+
+    //고객에 임의의 머니를 지급
+    fun customerSetMoneyRand(){
 //        this.money= (100000..1000000).random()
         var range = (100000..1000000 step 1000)// 천원 단위로 랜덤값 주고싶어서..
         this.money = (range.first..range.last).random()
         println("예약자분의 현재 돈  : ${this.money}")
     }
 
-    //호텔 예약비 임의로 지정
-    fun setFeeRand(){
-        var range = (100000..1000000 step 10000)
-        this.fee = (range.first..range.last).random()
-        println("호텔 예약비  : ${this.fee}")
-    }
 }
 
 fun main(){

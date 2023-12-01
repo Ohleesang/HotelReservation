@@ -27,7 +27,8 @@ class HotelReservation{
     var input :String? =""
 
     // 호텔 관련 프로퍼티
-    var customerList = mutableListOf<Customer>()
+    var customerList = mutableListOf<Customer>()//체크인,체크아웃 리스트
+    var peoples = mutableListOf<People>() // 지출 및 금액을 저장
 
 //    var name : String? ="" // 고객
 //    var roomNum : Int = -1 // 예약룸
@@ -209,18 +210,31 @@ class HotelReservation{
         println("체크인 5일 이전 취소 예약금의 100% 환불")
         println("취소가 완료되었습니다.")
 
-        //취소 하면 환불 해야하는데 설계를 잘못했네?
-        //한명이 여려명 룸을 예약하는걸 고려 x
+        // 취소 하면 환불 해야하는데 설계를 잘못했네?
+        // 한명이 여려명 룸을 예약하는걸 고려 x
+        // Costumer Class  위의 부모 클래스 A를 만들자.(이름, 지갑 프로퍼티 정도?)
+        // 계약서에 작성하면 돈을 주는게아니라, 인스턴스 A가 생성되면 돈을 주는형식으로 짜자.
+        // HotelClass 내에 A 를 저장하는 배열 하나 만들어서 저장 해놓자.
+
 
     }
     ///////////////////////////////////////////////////////////////////////////////
 
     //성함 입력
     fun setNameCustomer(c:Customer){
+
         while(true) {
             println("예약자분의 성함을 입력해주세요")
             input = readLine()
             if(input=="") continue
+
+            //  이름을 입력하면 peoples 인스턴스 생성
+            var newCosumter = People(input.toString())
+            // 아니야 포함만으로는 안됨
+            if(!peoples.contains(newCosumter)) peoples.add(People(input.toString()))
+
+            //  이때, people이랑 customer의 값이 같아야함.
+            c.money = newCosumter.money
             c.name = input.toString()
             break
         }
@@ -316,11 +330,20 @@ class HotelReservation{
     //자금 설정
     fun setMoney(c :Customer){
 
+        //peoples 도 고려해줘야한다.
+        var p = People()
+        for(pi in peoples){
+            if(pi.name==c.name){
+                p = pi
+                break
+            }
+        }
+
         //이때 임의의 금액을 지급해주고 랜덤으로 호텔 예약비로 빠져나가도록
-        c.customerSetMoneyRand()
         setFeeRand(c)
 
         //뺀값을 입력후 출력
+        p.money -= p.fee
         c.money -= c.fee
         println("예약자 분의 현재 자금  : ${c.money}")
     }
@@ -357,7 +380,6 @@ class HotelReservation{
         return true
     }
 
-
     //예약 리스트 보여주기
     fun printList(li : MutableList<Customer>){
         for(c in li){
@@ -370,39 +392,56 @@ class HotelReservation{
     }
 
     //호텔 예약비 임의로 지정
-    fun setFeeRand(customer :Customer){
+    fun setFeeRand(p :People){
         var range = (100000..1000000 step 10000)
-        customer.fee = (range.first..range.last).random()
-        println("호텔 예약비  : ${customer.fee}")
+        p.fee = (range.first..range.last).random()
+        println("호텔 예약비  : ${p.fee}")
     }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
+
+//사람 클래스 ...고객 전에는 사람(?)이니까
+open class People{
+    constructor(s:String) { //부 생성자
+        customerSetMoneyRand()
+        name = s
+    }
+    constructor() {
+        customerSetMoneyRand()
+    }
+
+    var name =""
+    var initMoney = 0
+    var money = 0
+    var fee = 0
+
+//고객에 임의의 머니를 지급
+fun customerSetMoneyRand(){
+//        this.money= (100000..1000000).random()
+    var range = (1000000..10000000 step 1000)// 천원 단위로 랜덤값 주고싶어서..
+    this.initMoney = (range.first..range.last).random()
+    this.money = this.initMoney
+//    println("예약자 분의 초기 자금  : ${this.money}")
+}
+
+}
+
+
 //고객 클래스
-class Customer{
-    var name : String? ="" // 고객
+class Customer: People() {
+    //    var name : String? ="" // 고객
     var roomNum : Int = -1 // 예약룸
     var checkInDate : LocalDate = LocalDate.of(2000,1,1)  //체크인 날짜
     var checkOutDate : LocalDate =LocalDate.of(2000,1,1) //체크아웃 날짜
-    var fee = 0//호텔 예약비
-    var money = 0 // 고객 지갑..
-    var initMoney = 0 //초기 입금
-
-
-    //고객에 임의의 머니를 지급
-    fun customerSetMoneyRand(){
-//        this.money= (100000..1000000).random()
-        var range = (100000..1000000 step 1000)// 천원 단위로 랜덤값 주고싶어서..
-        this.initMoney = (range.first..range.last).random()
-        money = this.initMoney
-        println("예약자 분의 초기 자금  : ${this.money}")
-    }
+//    var fee = 0//호텔 예약비
+//    var money = 0 // 고객 지갑..
+//    var initMoney = 0 //초기 입금
 
 }
 
 fun main(){
     var a = HotelReservation()
-    var input : String?
     while(true){
         a.executeApp()
     }

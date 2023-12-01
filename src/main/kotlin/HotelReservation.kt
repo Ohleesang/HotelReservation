@@ -61,16 +61,152 @@ class HotelReservation{
 
         //고객님 리스트 작성
         var customer = Customer()
-        //성함 입력
+
+        setNameCustomer(customer) //성함 입력
+        setRoomNum(customer) //방번호 입력
+        setCheckIO(customer) //체크인&체크아웃
+
+        println("호텔예약이 완료되었습니다.")
+
+        setMoney(customer) //자금 설정
+
+        customerList.add(customer) //리스트에 고객님 정보 입력완료!
+        println()
+
+    }
+
+    //2.예약목록 출력
+    fun reservationList(){
+        if(customerList.isEmpty()){
+            println("예약된 손님들이 없습니다!")
+            println("")
+            return
+        }
+
+        printList(customerList) // 리스트 보여주기
+    }
+
+    //3.예약목록 (정렬) 출력
+    fun sortedReservationList(){
+        if(customerList.isEmpty()){
+            println("예약된 손님들이 없습니다!")
+            println("")
+            return
+        }
+        val temp = customerList.sortedBy{it.checkInDate}.toMutableList()
+        printList(temp) //리스트 보여주기
+
+    }
+
+    //4.시스템 종료
+    fun quitApp(){
+        println("시스템이 종료 됩니다.")
+        System.exit(0)
+    }
+
+    //5.금액 입금-출금 내역 목록 출력
+    fun billList(){
+        println("조회 하실 사용자 이름을 입력하세요")
+        input = readLine()
+        var isSearch = false
+        for(li in customerList) {
+            if (li.name == input) {
+                println("#${li.roomNum}호 ${li.name} 고객님!")
+                println("1. 초기 금액으로 ${li.initMoney} 원 입금되었습니다.")
+                println("2. 예약금으로 ${li.fee} 원 출금되었습니다.")
+                isSearch = true
+            }
+        }
+        //찾지 못했을 경우
+        if(!isSearch) println("예약된 사용자를 찾을 수 없습니다.")
+
+
+        println()
+    }
+
+    //6.예약 변경/취소
+    fun reservationChange(){
+
+        println("예약을 변경할 사용자 이름을 입력하세요")
+        input = readLine()
+
+        ///input 값을 받아, 해당 되는 예약 목록 출력
+        val name = input
+        val temp = customerList.filter{it.name==name}.toMutableList()
+        val tempSize = temp.count()
+        if(temp.isEmpty()){//list가 비어있는경우
+
+            println("사용자 이름으로 예약된 목록을 찾을 수 없습니다.")
+
+        }
+        else {
+            while(true) {
+                println("${name} 님이 예약한 목록입니다. 변경하실 예약번호를 입력해주세요(탈출은 exit 입력)")
+                printList(temp)
+
+                try {
+                    input = readLine()
+                    if (input == "exit") return //함수를 종료
+
+                    var inputInt = input?.toInt()
+                    if(inputInt!! <= tempSize && inputInt > 0) {
+                        //변경 할건지 안할껀지 물어봄
+                        println("해당 예약을 어떻게 하시겠어요? 1. 변경 2. 취소 / 이외 번호. 메뉴로 돌아가기")
+
+                        input = readLine()
+                        inputInt =input?.toInt()
+
+                        if(inputInt==1){
+                            //변경하는 함수 짜기
+                            changeReservation()
+                            println("예약이 변경 되었습니다.")
+                            break
+                        }
+                        else if(inputInt==2){
+                            //취소하는 함수 짜기
+                            cancelReservation()
+                            println("취소가 완료 되었습니다.")
+                            break
+                        }
+
+                    }
+                    else println("잘못된 값 입력 하셨습니다.")
+                }catch(e: Exception){
+                    println("잘못된 값 입력 하셨습니다.")
+                }
+
+            }
+
+        }
+
+        println()
+    }
+
+    //예약 변경 함수
+    fun changeReservation(){
+
+    }
+
+    //예약취소 함수
+    fun cancelReservation(){
+
+    }
+    ///////////////////////////////////////////////////////////////////////////////
+
+    //성함 입력
+    fun setNameCustomer(c:Customer){
         while(true) {
             println("예약자분의 성함을 입력해주세요")
             input = readLine()
             if(input=="") continue
-            customer.name = input.toString()
+            c.name = input.toString()
             break
         }
 
-        //방번호 입력
+    }
+
+    //방번호 입력
+    fun setRoomNum(c:Customer){
         var roomNum :Int?
         while(true) {
             //올바른 정수값이 들어오지않으면 예외처리
@@ -79,7 +215,7 @@ class HotelReservation{
                 input = readLine()
                 roomNum = input?.toInt()!!
                 if (roomNum >= 100 && roomNum <= 999){
-                    customer.roomNum =roomNum
+                    c.roomNum =roomNum
                     break
                 }
                 else println("올바르지 않은 방번호 입니다. 방번호는 100~999 영역이내 입니다.")
@@ -88,8 +224,10 @@ class HotelReservation{
             }
         }
 
+    }
 
-        //체크인&체크아웃
+    //체크인 & 체크아웃
+    fun setCheckIO(c: Customer){
         var isCheck = false
         while(!isCheck) {
 
@@ -112,7 +250,7 @@ class HotelReservation{
 
                     //입력된 값을 파싱!
                     var formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
-                    customer.checkInDate = LocalDate.parse(input,formatter)
+                    c.checkInDate = LocalDate.parse(input,formatter)
                     break
                 } catch (e: Exception) {
                     println("파싱이 이상해요")
@@ -135,11 +273,11 @@ class HotelReservation{
 
                     //입력된 값을 파싱!
                     var formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
-                    customer.checkOutDate = LocalDate.parse(input,formatter)
+                    c.checkOutDate = LocalDate.parse(input,formatter)
 
-                    if (customer.checkInDate.isBefore(customer.checkOutDate)) {
+                    if (c.checkInDate.isBefore(c.checkOutDate)) {
                         //예약이 가능한지 안하는지 판별
-                        if (isReservaiton(customer)) isCheck = true
+                        if (isReservaiton(c)) isCheck = true
                         else println("날짜가 겹쳐있거나 이미 기간 내에 예약된 방입니다.")
 
                         break
@@ -151,22 +289,18 @@ class HotelReservation{
                 }
             }
         }
+    }
 
-        println("호텔예약이 완료되었습니다.")
-
+    //자금 설정
+    fun setMoney(c :Customer){
 
         //이때 임의의 금액을 지급해주고 랜덤으로 호텔 예약비로 빠져나가도록
-        customer.customerSetMoneyRand()
-        setFeeRand(customer)
+        c.customerSetMoneyRand()
+        setFeeRand(c)
 
         //뺀값을 입력후 출력
-        customer.money -= customer.fee
-        println("예약자 분의 현재 자금  : ${customer.money}")
-
-
-        customerList.add(customer) //리스트에 고객님 정보 입력완료!
-        println()
-
+        c.money -= c.fee
+        println("예약자 분의 현재 자금  : ${c.money}")
     }
 
     //예약이 가능한가요??
@@ -200,65 +334,17 @@ class HotelReservation{
         }
         return true
     }
-    //2.예약목록 출력
-    fun reservationList(){
-        if(customerList.isEmpty()){
-            println("예약된 손님들이 없습니다!")
-            println("")
-            return
-        }
-
-        for(c in customerList){
-            print((customerList.indexOf(c)+1).toString()+". ")//1.
-            print("사용자: "+c.name+", ")//사용자: 고객님, 
-            print("방번호: "+c.roomNum.toString()+"호, ")//방번호 : xxx호, 
-            print("체크인: "+c.checkInDate.toString()+", ")//2023-xx-xx .
-            println("체크아웃: "+c.checkOutDate.toString())//2023-xx-xx >>>라인넘김
-        }
-    }
-    //3.예약목록 (정렬) 출력
-    fun sortedReservationList(){
-        if(customerList.isEmpty()){
-            println("예약된 손님들이 없습니다!")
-            println("")
-            return
-        }
-        var temp = customerList.sortedBy{it.checkInDate}.toMutableList()
-        for(c in temp){
-            print((temp.indexOf(c)+1).toString()+". ")//1.
-            print("사용자: "+c.name+", ")//사용자: 고객님,
-            print("방번호: "+c.roomNum.toString()+"호, ")//방번호 : xxx호,
-            print("체크인: "+c.checkInDate.toString()+", ")//2023-xx-xx .
-            println("체크아웃: "+c.checkOutDate.toString())//2023-xx-xx >>>라인넘김
-        }
-    }
-    //4.시스템 종료
-    fun quitApp(){
-        println("시스템이 종료 됩니다.")
-        System.exit(0)
-    }
-    //5.금액 입금-출금 내역 목록 출력
-    fun billList(){
-        println("조회 하실 사용자 이름을 입력하세요")
-        input = readLine()
-        var isSearch = false
-        for(li in customerList) {
-            if (li.name == input) {
-                println("#${li.roomNum}호 ${li.name} 고객님!")
-                println("1. 초기 금액으로 ${li.initMoney} 원 입금되었습니다.")
-                println("2. 예약금으로 ${li.fee} 원 출금되었습니다.")
-                isSearch = true
-            }
-        }
-        //찾지 못했을 경우
-        if(!isSearch) println("예약된 사용자를 찾을 수 없습니다.")
 
 
-        println()
-    }
-    //6.예약 변경/취소
-    fun reservationChange(){
-
+    //예약 리스트 보여주기
+    fun printList(li : MutableList<Customer>){
+        for(li in customerList){
+            print((customerList.indexOf(li)+1).toString()+". ")//1.
+            print("사용자: "+li.name+", ")//사용자: 고객님,
+            print("방번호: "+li.roomNum.toString()+"호, ")//방번호 : xxx호,
+            print("체크인: "+li.checkInDate.toString()+", ")//2023-xx-xx .
+            println("체크아웃: "+li.checkOutDate.toString())//2023-xx-xx >>>라인넘김
+        }
     }
 
     //호텔 예약비 임의로 지정
@@ -269,6 +355,7 @@ class HotelReservation{
     }
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////
 //고객 클래스
 class Customer{
     var name : String? ="" // 고객

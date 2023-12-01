@@ -1,5 +1,6 @@
 import java.lang.NumberFormatException
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 /**
  *
@@ -104,10 +105,14 @@ class HotelReservation{
 //                        input?.substring(6..7)?.toIntOrNull()!!
 //                    )
                     //입력된 값을 파싱!
-                    var parsedText = input?.substring(0..3)+"-"+
-                    input?.substring(4..5)+"-"+
-                    input?.substring(6..7)
-                    customer.checkInDate = LocalDate.parse(parsedText)
+//                    var parsedText = input?.substring(0..3)+"-"+
+//                    input?.substring(4..5)+"-"+
+//                    input?.substring(6..7)
+//                    customer.checkInDate = LocalDate.parse(parsedText)
+
+                    //입력된 값을 파싱!
+                    var formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+                    customer.checkInDate = LocalDate.parse(input,formatter)
                     break
                 } catch (e: Exception) {
                     println("파싱이 이상해요")
@@ -128,10 +133,9 @@ class HotelReservation{
 //                        input?.substring(6..7)?.toIntOrNull()!!
 //                    )
 
-                    var parsedText = input?.substring(0..3)+"-"+
-                            input?.substring(4..5)+"-"+
-                            input?.substring(6..7)
-                    customer.checkOutDate = LocalDate.parse(parsedText)
+                    //입력된 값을 파싱!
+                    var formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+                    customer.checkOutDate = LocalDate.parse(input,formatter)
 
                     if (customer.checkInDate.isBefore(customer.checkOutDate)) {
                         //예약이 가능한지 안하는지 판별
@@ -157,7 +161,7 @@ class HotelReservation{
 
         //뺀값을 입력후 출력
         customer.money -= customer.fee
-        println("예약자분의 현재 돈  : ${customer.money}")
+        println("예약자 분의 현재 자금  : ${customer.money}")
 
 
         customerList.add(customer) //리스트에 고객님 정보 입력완료!
@@ -200,6 +204,7 @@ class HotelReservation{
     fun reservationList(){
         if(customerList.isEmpty()){
             println("예약된 손님들이 없습니다!")
+            println("")
             return
         }
 
@@ -215,6 +220,7 @@ class HotelReservation{
     fun sortedReservationList(){
         if(customerList.isEmpty()){
             println("예약된 손님들이 없습니다!")
+            println("")
             return
         }
         var temp = customerList.sortedBy{it.checkInDate}.toMutableList()
@@ -228,11 +234,27 @@ class HotelReservation{
     }
     //4.시스템 종료
     fun quitApp(){
-
+        println("시스템이 종료 됩니다.")
+        System.exit(0)
     }
     //5.금액 입금-출금 내역 목록 출력
     fun billList(){
+        println("조회 하실 사용자 이름을 입력하세요")
+        input = readLine()
+        var isSearch = false
+        for(li in customerList) {
+            if (li.name == input) {
+                println("#${li.roomNum}호 ${li.name} 고객님!")
+                println("1. 초기 금액으로 ${li.initMoney} 원 입금되었습니다.")
+                println("2. 예약금으로 ${li.fee} 원 출금되었습니다.")
+                isSearch = true
+            }
+        }
+        //찾지 못했을 경우
+        if(!isSearch) println("예약된 사용자를 찾을 수 없습니다.")
 
+
+        println()
     }
     //6.예약 변경/취소
     fun reservationChange(){
@@ -255,14 +277,16 @@ class Customer{
     var checkOutDate : LocalDate =LocalDate.of(2000,1,1) //체크아웃 날짜
     var fee = 0//호텔 예약비
     var money = 0 // 고객 지갑..
+    var initMoney = 0 //초기 입금
 
 
     //고객에 임의의 머니를 지급
     fun customerSetMoneyRand(){
 //        this.money= (100000..1000000).random()
         var range = (100000..1000000 step 1000)// 천원 단위로 랜덤값 주고싶어서..
-        this.money = (range.first..range.last).random()
-        println("예약자분의 현재 돈  : ${this.money}")
+        this.initMoney = (range.first..range.last).random()
+        money = this.initMoney
+        println("예약자 분의 초기 자금  : ${this.money}")
     }
 
 }

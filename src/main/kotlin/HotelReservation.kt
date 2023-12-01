@@ -148,24 +148,29 @@ class HotelReservation{
                     input = readLine()
                     if (input == "exit") return //함수를 종료
 
-                    var inputInt = input?.toInt()
-                    if(inputInt!! <= tempSize && inputInt > 0) {
+                    var index = input?.toInt() //처리할 리스트인덱스값
+                    if(index!! <= tempSize && index > 0) {
                         //변경 할건지 안할껀지 물어봄
                         println("해당 예약을 어떻게 하시겠어요? 1. 변경 2. 취소 / 이외 번호. 메뉴로 돌아가기")
 
                         input = readLine()
-                        inputInt =input?.toInt()
+                        var inputInt =input?.toInt()
 
                         if(inputInt==1){
+
+                            //  리스트의 있는 예약자를 불러오기
+                            //  customerList 내의 값이 변경되어야 한다.
+                            var cIndex = customerList.indexOf(temp[index-1])
                             //변경하는 함수 짜기
-                            changeReservation()
-                            println("예약이 변경 되었습니다.")
+                            changeReservation(cIndex)
                             break
                         }
                         else if(inputInt==2){
+
+                            var cIndex = customerList.indexOf(temp[index-1])
+
                             //취소하는 함수 짜기
-                            cancelReservation()
-                            println("취소가 완료 되었습니다.")
+                            cancelReservation(cIndex)
                             break
                         }
 
@@ -183,12 +188,29 @@ class HotelReservation{
     }
 
     //예약 변경 함수
-    fun changeReservation(){
+    fun changeReservation(index :Int){
+        var customer = customerList[index]
+        setRoomNum(customer) //방번호 입력
+        setCheckIO(customer) //체크인&체크아웃
 
+        println("예약이 변경되었습니다.")
     }
 
     //예약취소 함수
-    fun cancelReservation(){
+    fun cancelReservation(index :Int){
+        customerList.removeAt(index)
+
+        //문자열 출력
+        println("[취소 유의사항]")
+        println("체크인 3일 이전 취소 예약금 환불 불가")
+        println("체크인 5일 이전 취소 예약금의 30% 환불")
+        println("체크인 5일 이전 취소 예약금의 50% 환불")
+        println("체크인 5일 이전 취소 예약금의 80% 환불")
+        println("체크인 5일 이전 취소 예약금의 100% 환불")
+        println("취소가 완료되었습니다.")
+
+        //취소 하면 환불 해야하는데 설계를 잘못했네?
+        //한명이 여려명 룸을 예약하는걸 고려 x
 
     }
     ///////////////////////////////////////////////////////////////////////////////
@@ -338,12 +360,12 @@ class HotelReservation{
 
     //예약 리스트 보여주기
     fun printList(li : MutableList<Customer>){
-        for(li in customerList){
-            print((customerList.indexOf(li)+1).toString()+". ")//1.
-            print("사용자: "+li.name+", ")//사용자: 고객님,
-            print("방번호: "+li.roomNum.toString()+"호, ")//방번호 : xxx호,
-            print("체크인: "+li.checkInDate.toString()+", ")//2023-xx-xx .
-            println("체크아웃: "+li.checkOutDate.toString())//2023-xx-xx >>>라인넘김
+        for(c in li){
+            print((li.indexOf(c)+1).toString()+". ")//1.
+            print("사용자: "+c.name+", ")//사용자: 고객님,
+            print("방번호: "+c.roomNum.toString()+"호, ")//방번호 : xxx호,
+            print("체크인: "+c.checkInDate.toString()+", ")//2023-xx-xx .
+            println("체크아웃: "+c.checkOutDate.toString())//2023-xx-xx >>>라인넘김
         }
     }
 
